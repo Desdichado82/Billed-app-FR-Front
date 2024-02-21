@@ -16,10 +16,20 @@ export default class NewBill {
     new Logout({ document, localStorage, onNavigate })
   }
   handleChangeFile = e => {
+
     e.preventDefault()
     const file = this.document.querySelector(`input[data-testid="file"]`).files[0]
     const filePath = e.target.value.split(/\\/g)
+
     const fileName = filePath[filePath.length-1]
+    // Get the file extension
+  const fileExtension = fileName.split('.').pop().toLowerCase()
+
+  // Check if the file extension is jpg, jpeg, or png
+  if (!['jpg', 'jpeg', 'png'].includes(fileExtension)) {
+    alert('Invalid file type. Only .jpg, .jpeg, and .png files are allowed.')
+    return
+  }
     const formData = new FormData()
     const email = JSON.parse(localStorage.getItem("user")).email
     formData.append('file', file)
@@ -34,6 +44,7 @@ export default class NewBill {
         }
       })
       .then(({fileUrl, key}) => {
+
         console.log(fileUrl)
         this.billId = key
         this.fileUrl = fileUrl

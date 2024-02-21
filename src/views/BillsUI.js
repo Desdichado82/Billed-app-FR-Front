@@ -17,10 +17,42 @@ const row = (bill) => {
       </td>
     </tr>
     `)
-  }
+}
 
 const rows = (data) => {
-  return (data && data.length) ? data.map(bill => row(bill)).join("") : ""
+  // Sort the bills by date
+  // Sorting code
+// Sorting code
+const sortedBills = data.sort((a, b) => {
+  const dateA = parseDate(a.date);
+  const dateB = parseDate(b.date);
+  return dateB - dateA;
+});
+
+// Function to parse date based on format
+function parseDate(dateStr) {
+  if (dateStr.match(/\d{4}-\d{2}-\d{2}/)) {
+    // Date format like "2004-04-04"
+    return new Date(dateStr);
+  } else {
+    // Date format like "22 Nov. 21"
+    const parts = dateStr.split(' ');
+    const month = parseMonth(parts[1]);
+    const year = parseInt(parts[2]) + 2000; // Assuming years are in the range 2000-2099
+    const day = parseInt(parts[0]);
+    return new Date(year, month, day);
+  }
+}
+// Function to parse month abbreviation
+function parseMonth(monthStr) {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return months.indexOf(monthStr);
+}
+  console.log("View bills",sortedBills)
+  // Generate HTML rows for each bill
+  const htmlRows = sortedBills.map(bill => row(bill)).join("");
+  
+  return htmlRows;
 }
 
 export default ({ data: bills, loading, error }) => {

@@ -137,20 +137,24 @@ export default class {
       $(`#arrow-icon${this.index}`).css({ transform: 'rotate(0deg)'})
       $(`#status-bills-container${this.index}`)
         .html(cards(filteredBills(bills, getStatus(this.index))))
-      this.counter ++
+      this.counter++
     } else {
       $(`#arrow-icon${this.index}`).css({ transform: 'rotate(90deg)'})
-      $(`#status-bills-container${this.index}`)
-        .html("")
-      this.counter ++
+      $(`#status-bills-container${this.index}`).html("")
+      this.counter++
     }
-
+  
+    // Remove existing click event listeners from all bill cards
     bills.forEach(bill => {
-      $(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills))
-    })
-
-    return bills
-
+      $(`#open-bill${bill.id}`).off('click');
+    });
+  
+    // Attach click event listener to bill cards in the current list
+    bills.forEach(bill => {
+      $(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills));
+    });
+  
+    return bills;
   }
 
   getBillsAllUsers = () => {
