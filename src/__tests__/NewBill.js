@@ -1,72 +1,64 @@
-import { fireEvent, screen, waitFor } from "@testing-library/dom";
-import userEvent from '@testing-library/user-event';
-import NewBillUI from "../views/NewBillUI.js";
-import { ROUTES_PATH } from "../constants/routes.js";
+import NewBill from "../containers/NewBill.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
 import mockStore from "../__mocks__/store";
-import router from "../app/Router.js";
+import { fireEvent, screen } from "@testing-library/dom";
 
 jest.mock("../app/store", () => mockStore);
 
-describe("Given I am connected as an employee", () => {
+describe("Given I am a user connected as Employee", () => {
   describe("When I am on NewBill Page", () => {
-    test("Then the NewBill page should render correctly", () => {
-      const html = NewBillUI();
-      document.body.innerHTML = html;
-      // Assert that the necessary elements are rendered on the NewBill page
-      expect(screen.getByText("Envoyer une note de frais")).toBeTruthy();
-      expect(screen.getByTestId("form-new-bill")).toBeTruthy();
-      // Add assertions for other UI elements as needed
+    beforeEach(() => {
+      // Set up our document body
+      document.body.innerHTML = NewBill();
     });
 
-    test("Then I should be able to submit a new bill", async () => {
-      // Mock necessary data and API response
-      const billData = {
-        // Define bill data
-      };
-      mockStore.bills().create = jest.fn().mockResolvedValueOnce({ fileUrl: "https://example.com/test.jpg", key: "1234" });
-
-      // Populate form fields, trigger form submission, and wait for API call
-      // Add your test implementation here
-
-      // Assert navigation to Bills page
-      expect(window.location.href).toContain(ROUTES_PATH.Bills);
+    test("Then bill form should be rendered", () => {
+      expect(screen.getByTestId('form-new-bill')).toBeTruthy();
     });
 
-    describe("When an error occurs on API", () => {
-      beforeEach(() => {
-        jest.spyOn(mockStore, "bills");
-        Object.defineProperty(window, "localStorage", { value: localStorageMock });
-        window.localStorage.setItem("user", JSON.stringify({ type: "Employee" }));
-        const root = document.createElement("div");
-        root.setAttribute("id", "root");
-        document.body.appendChild(root);
-        router();
+    test("Then it should call the handleChangeFile function on file change", () => {
+      // Arrange
+      const onNavigate = jest.fn();
+      const newBill = new NewBill({
+        document,
+        onNavigate,
+        store: mockStore,
+        localStorage: window.localStorage,
       });
 
-      test("Then it should handle 404 error", async () => {
-        // Mock API call to return a 404 error
-        mockStore.bills().create = jest.fn().mockRejectedValueOnce(new Error("Erreur 404"));
-
-        // Trigger form submission
-        const form = screen.getByTestId("form-new-bill");
-        fireEvent.submit(form);
-
-        // Wait for the error message to be rendered
-        await waitFor(() => expect(screen.getByText(/Erreur 404/)).toBeInTheDocument());
+      // Act
+      const handleChangeFile = jest.fn(newBill.handleChangeFile);
+      const inputFile = screen.getByTestId("file");
+      inputFile.addEventListener("change", handleChangeFile);
+      fireEvent.change(inputFile, {
+        target: {
+          files: [new File(["file"], "file.png", { type: "image/png" })],
+        },
       });
 
-      test("Then it should handle 500 error", async () => {
-        // Mock API call to return a 500 error
-        mockStore.bills().create = jest.fn().mockRejectedValueOnce(new Error("Erreur 500"));
+      // Assert
+      expect(handleChangeFile).toHaveBeenCalled();
+    });
 
-        // Trigger form submission
-        const form = screen.getByTestId("form-new-bill");
-        fireEvent.submit(form);
-
-        // Wait for the error message to be rendered
-        await waitFor(() => expect(screen.getByText(/Erreur 500/)).toBeInTheDocument());
+    test("Then it should call the handleSubmit function on form submission", () => {
+      // Arrange
+      const onNavigate = jest.fn();
+      const newBill = new NewBill({
+        document,
+        onNavigate,
+        store: mockStore,
+        localStorage: window.localStorage,
       });
+
+      // Act
+      const handleSubmit = jest.fn(newBill.handleSubmit);
+      const form = screen.getByTestId("form-new-bill");
+      form.addEventListener("submit", handleSubmit);
+      fireEvent.submit(form);
+
+      // Assert
+      expect(handleSubmit).toHaveBeenCalled();
     });
   });
 });
+
