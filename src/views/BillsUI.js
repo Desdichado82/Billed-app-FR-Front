@@ -1,11 +1,10 @@
-import VerticalLayout from './VerticalLayout.js'
-import ErrorPage from "./ErrorPage.js"
-import LoadingPage from "./LoadingPage.js"
-
-import Actions from './Actions.js'
+import VerticalLayout from "./VerticalLayout.js";
+import ErrorPage from "./ErrorPage.js";
+import LoadingPage from "./LoadingPage.js";
+import Actions from "./Actions.js";
 
 const row = (bill) => {
-  return (`
+  return `
     <tr>
       <td>${bill.type}</td>
       <td>${bill.name}</td>
@@ -16,49 +15,22 @@ const row = (bill) => {
         ${Actions(bill.fileUrl)}
       </td>
     </tr>
-    `)
-}
+    `;
+};
 
 const rows = (data) => {
-  // Sort the bills by date
-  // Sorting code
-// Sorting code
-const sortedBills = data.sort((a, b) => {
-  const dateA = parseDate(a.date);
-  const dateB = parseDate(b.date);
-  return dateB - dateA;
-});
-
-// Function to parse date based on format
-function parseDate(dateStr) {
-  if (dateStr.match(/\d{4}-\d{2}-\d{2}/)) {
-    // Date format like "2004-04-04"
-    return new Date(dateStr);
-  } else {
-    // Date format like "22 Nov. 21"
-    const parts = dateStr.split(' ');
-    const month = parseMonth(parts[1]);
-    const year = parseInt(parts[2]) + 2000; // Assuming years are in the range 2000-2099
-    const day = parseInt(parts[0]);
-    return new Date(year, month, day);
-  }
-}
-// Function to parse month abbreviation
-function parseMonth(monthStr) {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return months.indexOf(monthStr);
-}
-  console.log("View bills",sortedBills)
-  // Generate HTML rows for each bill
-  const htmlRows = sortedBills.map(bill => row(bill)).join("");
-  
-  return htmlRows;
-}
+  return data && data.length
+    ? data
+        .sort((a, b) => (new Date(a.date) < new Date(b.date) ? 1 : -1))
+        .map((bill) => row(bill))
+        .join("")
+    : "";
+};
 
 export default ({ data: bills, loading, error }) => {
-  
-  const modal = () => (`
-    <div class="modal fade" id="modaleFile" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  console.log(bills);
+  const modal = () => `
+    <div class="modal fade" id="modaleFile" data-testid="modaleFile" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -72,15 +44,15 @@ export default ({ data: bills, loading, error }) => {
         </div>
       </div>
     </div>
-  `)
+  `;
 
   if (loading) {
-    return LoadingPage()
+    return LoadingPage();
   } else if (error) {
-    return ErrorPage(error)
+    return ErrorPage(error);
   }
-  
-  return (`
+
+  return `
     <div class='layout'>
       ${VerticalLayout(120)}
       <div class='content'>
@@ -107,6 +79,5 @@ export default ({ data: bills, loading, error }) => {
         </div>
       </div>
       ${modal()}
-    </div>`
-  )
-}
+    </div>`;
+};
